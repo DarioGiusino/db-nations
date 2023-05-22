@@ -1,7 +1,44 @@
 package org.java.main;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class Main {
 	public static void main(String[] args) {
-		System.out.println("hello world");
+
+		String url = "jdbc:mysql://localhost:3306/nations_db";
+		String user = "root";
+		String password = "root";
+		
+		try(Connection conn = DriverManager.getConnection(url, user, password)){
+			
+			String sql = "SELECT c.name AS nomeNazione, c.country_id AS idNazione, r.name AS nomeRegione, c2.name AS nomeContinente\r\n"
+					+ "FROM countries c \r\n"
+					+ "JOIN regions r \r\n"
+					+ "ON c.region_id = r.region_id \r\n"
+					+ "JOIN continents c2 \r\n"
+					+ "ON r.continent_id = c2.continent_id \r\n"
+					+ "ORDER BY c.name ";
+			
+			try(PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()){
+				
+				while(rs.next()) {
+					final String countryName = rs.getString("nomeNazione");
+					final int countryId = rs.getInt("idNazione");
+					final String regionName = rs.getString("nomeRegione");
+					final String continentName = rs.getString("nomeContinente");
+					
+					System.out.println(countryName + " - " + countryId + " - " + regionName + " - " + continentName);
+				}
+				
+			}
+			
+		} catch(SQLException ex) {
+			System.err.println("Error: " + ex);
+		}
+		
 	}
 }
